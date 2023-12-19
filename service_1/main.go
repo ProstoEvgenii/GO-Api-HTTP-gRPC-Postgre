@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
+	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/spf13/viper"
 	"github.com/valyala/fasthttp"
 	"google.golang.org/grpc"
@@ -12,18 +13,30 @@ import (
 )
 
 func main() {
-	serviceBConn := createServiceBConnection()
-	defer serviceBConn.Close()
-	loadConfig()
-	server := fasthttp.Server{
-		Handler: requestHandler,
+	host := "127.0.0.1:8080"
+	if err := godotenv.Load(".env"); err != nil {
+		log.Println("Файл ENV не найден")
+		host = ":8080"
 	}
-	if err := server.ListenAndServe("127.0.0.1:8080"); err != nil {
-		log.Fatalf("Error in ListenAndServe: %v", err)
-	}
+
+	// serviceBConn := createServiceBConnection()
+	// defer serviceBConn.Close()
+	// loadConfig()
+	router := routing.New()
+
+	router.Get("/api/<data>", func(ctx *routing.Context) error {
+		log.Printf("Name: %v", ctx.Param("data"))
+		fmt.Fprintf(ctx, "Name: %v", ctx.Param("data"))
+		return nil
+	})
+	fasthttp.ListenAndServe(host, router.HandleRequest)
+
 }
 
 func requestHandler(ctx *fasthttp.RequestCtx) {
+	// if fmt.Fprintf("%v", ctx.RequestURI()) == "api" {
+
+	// }
 	fmt.Fprintf(ctx, "Request method is %q\n", ctx.Method())
 	fmt.Fprintf(ctx, "RequestURI is %q\n", ctx.RequestURI())
 	fmt.Fprintf(ctx, "Requested path is %q\n", ctx.Path())
