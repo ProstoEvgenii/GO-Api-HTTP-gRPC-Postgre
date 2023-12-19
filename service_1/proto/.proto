@@ -1,0 +1,16 @@
+
+syntax = "proto3";
+package service_1;
+option go_package = "github.com/yourusername/yourproject/service_1/pkg/proto";
+message Request {
+  string symbol = 1;
+  string interval = 2;
+}
+
+message Response {
+  string data_from_binance = 1;
+}
+
+service Service1 {
+  rpc GetDataFromApi(Request) returns (Response);
+}
