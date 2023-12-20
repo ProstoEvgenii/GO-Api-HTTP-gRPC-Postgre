@@ -1,43 +1,46 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"service_1/proto"
 
 	"github.com/joho/godotenv"
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-	host := "127.0.0.1:8080"
+	host := "127.0.0.1:888"
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("Файл ENV не найден")
-		host = ":8080"
+		host = ":888"
 	}
 
-	// serviceBConn := createServiceBConnection()
-	// defer serviceBConn.Close()
-	// loadConfig()
+	conn, err := grpc.Dial(":8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	router := routing.New()
 
-	router.Get("/api/<data>", func(ctx *routing.Context) error {
-		log.Printf("Name: %v", ctx.Param("data"))
-		fmt.Fprintf(ctx, "Name: %v", ctx.Param("data"))
+	client := proto.NewService1Client(conn)
+
+	router.Get("/api", func(ctx *routing.Context) error {
+
+		symbol := string(ctx.QueryArgs().Peek("symbol"))
+		interval := string(ctx.QueryArgs().Peek("interval"))
+
+		resp, _ := client.GetDataFromApi(context.TODO(), &proto.Request{
+			Symbol:   symbol,
+			Interval: interval,
+		})
+		fmt.Fprintf(ctx, "Response: %s", resp.DataBinance)
 		return nil
 	})
 	fasthttp.ListenAndServe(host, router.HandleRequest)
 
 }
-
-// func createServiceBConnection() *grpc.ClientConn {
-// 	// Получение адреса сервера ServiceB из конфигурации
-// 	serviceBAddress := viper.GetString("service_b.address")
-// 	creds := credentials.NewTLS(nil)
-// 	// Установка параметров подключения к gRPC серверу ServiceB
-// 	conn, err := grpc.Dial(serviceBAddress, grpc.WithTransportCredentials(creds))
-// 	if err != nil {
-// 		log.Printf("Failed to connect to ServiceB: %v", err)
-// 	}
-// 	return conn
-// }

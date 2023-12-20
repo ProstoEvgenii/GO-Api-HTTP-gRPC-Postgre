@@ -1,41 +1,38 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
+	"net"
+	"service_2/binance"
+	"service_2/pkg/proto"
 
-	"github.com/valyala/fasthttp"
+	"google.golang.org/grpc"
 )
 
-func getDataFromBinance(symbol, interval string) ([]byte, error) {
-	url := fmt.Sprintf("https://api.binance.com/api/v3/klines?symbol=%s&interval=%s", symbol, interval)
+type GRPCServer struct {
+	proto.UnimplementedService1Server
+}
 
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetMethod("GET")
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	client := &fasthttp.Client{}
-	if err := client.Do(req, resp); err != nil {
+func (s *GRPCServer) GetDataFromApi(ctx context.Context, req *proto.Request) (*proto.Response, error) {
+	data, err := binance.GetDataFromBinance(req.Symbol, req.Interval)
+	if err != nil {
 		return nil, err
 	}
 
-	body := resp.Body()
-	return body, nil
+	return &proto.Response{
+		DataBinance: data,
+	}, nil
 }
-
 func main() {
-	symbol := "BTCUSDT"
-	interval := "1h"
-
-	data, err := getDataFromBinance(symbol, interval)
+	s := grpc.NewServer()
+	proto.RegisterService1Server(s, &GRPCServer{})
+	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		log.Fatal(err)
 	}
-
-	fmt.Println(string(data))
+	log.Println("gRPC запущен на :8080")
+	if err := s.Serve(l); err != nil {
+		log.Fatal(err)
+	}
 }

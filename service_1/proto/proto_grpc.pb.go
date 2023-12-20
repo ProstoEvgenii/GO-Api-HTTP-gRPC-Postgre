@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v4.25.1
-// source: proto/.proto
+// source: .proto
 
 package proto
 
@@ -35,7 +35,7 @@ func NewService1Client(cc grpc.ClientConnInterface) Service1Client {
 
 func (c *service1Client) GetDataFromApi(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/service_1.Service1/GetDataFromApi", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service_2.Service1/GetDataFromApi", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _Service1_GetDataFromApi_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service_1.Service1/GetDataFromApi",
+		FullMethod: "/service_2.Service1/GetDataFromApi",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(Service1Server).GetDataFromApi(ctx, req.(*Request))
@@ -92,7 +92,7 @@ func _Service1_GetDataFromApi_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Service1_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "service_1.Service1",
+	ServiceName: "service_2.Service1",
 	HandlerType: (*Service1Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -101,5 +101,5 @@ var Service1_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/.proto",
+	Metadata: ".proto",
 }
