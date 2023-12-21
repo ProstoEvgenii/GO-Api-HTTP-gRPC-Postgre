@@ -25,9 +25,10 @@ func (s *GRPCServer) GetDataFromApi(ctx context.Context, req *proto.Request) (*p
 	}, nil
 }
 func main() {
+
 	s := grpc.NewServer()
 	proto.RegisterService1Server(s, &GRPCServer{})
-	l, err := net.Listen("tcp", ":8080")
+	l, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
 		log.Fatal(err)
 	}
