@@ -14,7 +14,7 @@ var Client proto.Service1Client
 func Start_gRPCClient() {
 	conn, err := grpc.Dial(":8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Ошибка gRPC соединения:", err)
 	}
 
 	Client = proto.NewService1Client(conn)

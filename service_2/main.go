@@ -19,6 +19,7 @@ func (s *GRPCServer) GetDataFromApi(ctx context.Context, req *proto.Request) (*p
 	if err != nil {
 		return nil, err
 	}
+	log.Println("data")
 
 	return &proto.Response{
 		DataBinance: data,
@@ -30,10 +31,9 @@ func main() {
 	proto.RegisterService1Server(s, &GRPCServer{})
 	l, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Ошибка net.Listen:", err)
 	}
-	log.Println("gRPC запущен на :8080")
 	if err := s.Serve(l); err != nil {
-		log.Fatal(err)
+		log.Println("Ошибка gRPC соединения:", err)
 	}
 }

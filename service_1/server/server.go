@@ -28,6 +28,20 @@ type APIResponse struct {
 	Interval string `json:"interval"`
 	Data     []Data `json:"data"`
 }
+type BinanceData struct {
+	Timestamp             int64
+	Open                  string
+	High                  string
+	Low                   string
+	Close                 string
+	Volume                string
+	CloseTimestamp        int64
+	QuoteAssetVolume      string
+	NumberOfTrades        int
+	TakerBuyBaseAssetVol  string
+	TakerBuyQuoteAssetVol string
+	Ignore                string
+}
 
 func Start(host string) {
 	router := routing.New()
@@ -38,10 +52,19 @@ func Start(host string) {
 		interval := string(ctx.QueryArgs().Peek("interval"))
 		resp, err := grpc.GetDataFromAPI(symbol, interval)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("GetDataFromAPI Err:", err)
 		}
-		uploadBinanceData(resp.DataBinance, symbol, interval)
-		// log.Printf(resss.Data)
+		var binanceData [][]string
+		if err := json.Unmarshal(resp.DataBinance, &binanceData); err != nil {
+			log.Printf("Ошибка при преобразовании ответа в структуру: %v", err)
+		}
+		log.Println("11111", binanceData[0])
+
+		// _, errUpload := uploadBinanceData(resp.DataBinance, symbol, interval)
+		// if errUpload != nil {
+		// 	log.Println("uploadBinanceData Err:", err)
+		// }
+
 		fmt.Fprintf(ctx, "Response: %s", resp.DataBinance)
 		return nil
 	})
@@ -49,7 +72,7 @@ func Start(host string) {
 }
 
 func uploadBinanceData(binanceBytes []byte, symbol, interval string) (*APIResponse, error) {
-	log.Println("туты")
+
 	var binanceData APIResponse
 	if err := json.Unmarshal(binanceBytes, &binanceData); err != nil {
 		log.Println(err)
